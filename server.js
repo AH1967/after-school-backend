@@ -21,9 +21,15 @@ module.exports = (req, res, next) => {
 };
 
 
-router.get('/', (req, res) => {
-    res.send('Get all lessons');
+// A. GET /lessons - Retrieve all lessons
+app.get('/lessons', (req, res) => {
+    db.collection('lessons')
+        .find()
+        .toArray()
+        .then(lessons => res.json(lessons))
+        .catch(err => res.status(500).json({ error: 'Failed to fetch lessons' }));
 });
+
 
 module.exports = router;
 
