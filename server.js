@@ -4,6 +4,11 @@ const app = express();
 const express = require('express');
 const router = express.Router();
 
+module.exports = (err, req, res, next) => {
+    res.status(500).json({ message: err.message });
+};
+
+
 router.get('/', (req, res) => {
     res.send('Get all lessons');
 });
