@@ -4,6 +4,10 @@ const app = express();
 const express = require('express');
 const router = express.Router();
 
+const cors = require('cors');
+app.use(cors());
+
+
 module.exports = (err, req, res, next) => {
     res.status(500).json({ message: err.message });
 };
