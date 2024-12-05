@@ -33,9 +33,54 @@ app.get('/lessons', (req, res) => {
 
 module.exports = router;
 
-router.post('/', (req, res) => {
-    res.send('Order created');
+// POST /orders - Save a new order to the orders collection
+app.post('/orders', async (req, res) => {
+    try {
+        const { name, phone, lessonIDs } = req.body;
+
+        // Validate the request body
+        if (!name || !phone || !lessonIDs || lessonIDs.length === 0) {
+            return res.status(400).json({ error: 'All fields (name, phone, lessonIDs) are required.' });
+        }
+
+         // Validate lessonIDs
+         if (!lessonIDs.every(id => ObjectId.isValid(id))) {
+             return res.status(400).json({ error: 'Invalid lesson IDs' });
+        }
+        
+
+        // Convert lessonIDs (strings) to ObjectId
+        const objectIdLessonIDs = lessonIDs.map(id => new ObjectId(id));
+
+        // Create the new order document
+        const newOrder = {
+            name,
+            phone,
+            lessonIDs: objectIdLessonIDs,
+            createdAt: new Date(), // Add a timestamp
+        };
+
+        // Insert the new order into the orders collection
+        const ordersCollection = db.collection('orders');
+        await ordersCollection.insertOne(newOrder);
+
+        // Decrement the `spaces` field for each lesson
+        const lessonsCollection = db.collection('lessons');
+        for (const lessonID of objectIdLessonIDs) {
+            await lessonsCollection.updateOne(
+                { _id: lessonID },
+                { $inc: { spaces: -1 } } // Decrease by 1 per lesson enrolled
+            );
+        }
+
+        res.status(201).json({ message: 'Order created successfully', order: newOrder });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        res.status(500).json({ error: 'Failed to create order' });
+    }
 });
+
+
 
 // Connecting Mongodb
 const mongoose = require('mongoose');
