@@ -10,6 +10,9 @@ router.get('/', (req, res) => {
 
 module.exports = router;
 
+router.post('/', (req, res) => {
+    res.send('Order created');
+});
 
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/after-school', {
