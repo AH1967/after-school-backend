@@ -1,25 +1,54 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Import CORS
+const { MongoClient, ObjectId } = require('mongodb'); // MongoDB driver
+
 const app = express();
+const PORT = 3000;
 
-const express = require('express');
-const router = express.Router();
+// Connection URI
+const MONGO_URI = 'mongodb+srv://abdo97:1234@cluster0.8rva7e3.mongodb.net/after_school?retryWrites=true&w=majority';
 
-const cors = require('cors');
-app.use(cors());
+// Global variables
+let db;
+
+// Middleware for parsing JSON requests
+app.use(bodyParser.json()); // Parses incoming JSON requests
+
+// Enable CORS for all requests
+app.use(cors()); // Allow all origins
+                   // Allow cross-origin requests from the front-end
+ 
 
 
-module.exports = (err, req, res, next) => {
-    res.status(500).json({ message: err.message });
-};
+// Middleware for logging requests
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    
+    // Log raw request body
+    let rawBody = '';
+    req.on('data', chunk => {
+        rawBody += chunk;
+    });
+    req.on('end', () => {
+        console.log('Raw Body:', rawBody);
+    });
 
-module.exports = (req, res, next) => {
-    if (!req.body.name) {
-        return res.status(400).json({ message: 'Name is required' });
-    }
+    console.log('Parsed Body:', req.body); // This will show the parsed JSON body
     next();
-};
+});
 
+
+
+// Connect to MongoDB
+MongoClient.connect(MONGO_URI, { useUnifiedTopology: true })
+    .then(client => {
+        console.log('Connected to MongoDB');
+        db = client.db('after_school'); // Database name
+    })
+    .catch(err => console.error('MongoDB connection error:', err));
+
+// Routes
 
 // A. GET /lessons - Retrieve all lessons
 app.get('/lessons', (req, res) => {
@@ -29,9 +58,6 @@ app.get('/lessons', (req, res) => {
         .then(lessons => res.json(lessons))
         .catch(err => res.status(500).json({ error: 'Failed to fetch lessons' }));
 });
-
-
-module.exports = router;
 
 // POST /orders - Save a new order to the orders collection
 app.post('/orders', async (req, res) => {
@@ -111,15 +137,8 @@ app.put('/lessons/:id', async (req, res) => {
 
 
 
-
-// Connecting Mongodb
-const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/after-school', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running at http://localhost:${PORT}`);
 });
 
-
-
-// Start the server
-app.listen(3000, () => console.log('Server running on port 3000'));
