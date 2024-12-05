@@ -80,6 +80,36 @@ app.post('/orders', async (req, res) => {
     }
 });
 
+app.put('/lessons/:id', async (req, res) => {
+    try {
+        const lessonID = req.params.id;
+
+        if (!ObjectId.isValid(lessonID)) {
+            return res.status(400).json({ error: 'Invalid lesson ID' });
+        }
+
+        const { spaces } = req.body;
+        if (spaces === undefined || spaces < 0) {
+            return res.status(400).json({ error: 'Invalid spaces value' });
+        }
+
+        const result = await db.collection('lessons').updateOne(
+            { _id: new ObjectId(lessonID) },
+            { $set: { spaces } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ error: 'Lesson not found or no changes made' });
+        }
+
+        res.status(200).json({ message: 'Lesson updated successfully' });
+    } catch (error) {
+        console.error('Error updating lesson:', error);
+        res.status(500).json({ error: 'Failed to update lesson' });
+    }
+});
+
+
 
 
 // Connecting Mongodb
