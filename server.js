@@ -30,6 +30,7 @@ router.post('/', (req, res) => {
     res.send('Order created');
 });
 
+// Connecting Mongodb
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/after-school', {
     useNewUrlParser: true,
@@ -38,5 +39,5 @@ mongoose.connect('mongodb://localhost:27017/after-school', {
 
 
 
-
+// Start the server
 app.listen(3000, () => console.log('Server running on port 3000'));
