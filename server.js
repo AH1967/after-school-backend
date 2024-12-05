@@ -8,6 +8,13 @@ module.exports = (err, req, res, next) => {
     res.status(500).json({ message: err.message });
 };
 
+module.exports = (req, res, next) => {
+    if (!req.body.name) {
+        return res.status(400).json({ message: 'Name is required' });
+    }
+    next();
+};
+
 
 router.get('/', (req, res) => {
     res.send('Get all lessons');
